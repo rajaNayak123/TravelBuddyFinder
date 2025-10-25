@@ -21,7 +21,7 @@ export const authOptions: NextAuthOptions = {
         await connectToDatabase()
         const user = await User.findOne({ email: credentials.email })
 
-        if (!user) {
+        if (!user || !user.password) {
           throw new Error("User not found")
         }
 
@@ -46,17 +46,22 @@ export const authOptions: NextAuthOptions = {
   callbacks: {
     async signIn({ user, account }) {
       if (account?.provider === "google") {
-        await connectToDatabase()
-        let dbUser = await User.findOne({ email: user.email })
+        try {
+          await connectToDatabase()
+          let dbUser = await User.findOne({ email: user.email })
 
-        if (!dbUser) {
-          dbUser = await User.create({
-            email: user.email,
-            name: user.name,
-            googleId: account.providerAccountId,
-          })
+          if (!dbUser) {
+            dbUser = await User.create({
+              email: user.email,
+              name: user.name || "",
+              googleId: account.providerAccountId,
+            })
+          }
+          user.id = dbUser._id.toString()
+        } catch (error) {
+          console.error("Error in Google sign in:", error)
+          return false
         }
-        user.id = dbUser._id.toString()
       }
       return true
     },
