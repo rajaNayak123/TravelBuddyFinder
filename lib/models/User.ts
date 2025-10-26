@@ -5,7 +5,18 @@ export interface IUser extends Document {
     name: string
     password?: string
     googleId?: string
+    age?: number;
+    gender?: "male" | "female" | "other" | "prefer-not-to-say";
+    travelStyle?: string[];
+    destinations?: string[];
+    budget?: "budget" | "moderate" | "luxury";
+    languages?: string[];
+    bio?: string;
+    rating: number;  
+    reviewCount: number; 
+    verified: boolean;
     createdAt: Date
+    updatedAt: Date
   }
 
 const UserSchema = new mongoose.Schema({
