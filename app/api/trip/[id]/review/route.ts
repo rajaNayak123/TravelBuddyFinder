@@ -1,7 +1,7 @@
 import { connectToDatabase } from "@/lib/db";
 import { Trip } from "@/lib/models/Trip";
 import { Review } from "@/lib/models/Review";
-import { User, IUser } from "@/lib/models/User";
+import { User } from "@/lib/models/User";
 import { auth } from "@/lib/auth";
 import { Types } from "mongoose";
 // import { createNotification } from "@/components/notification-helper"

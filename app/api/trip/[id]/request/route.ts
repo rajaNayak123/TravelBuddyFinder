@@ -6,7 +6,7 @@ import {Types} from "mongoose";
 // import { createNotification } from "@/components/notification-helper"
 import {type NextRequest, NextResponse } from "next/server";
 
-export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }){
+export async function POST( { params }: { params: Promise<{ id: string }> } ){
     try {
         const session = await auth();
 
