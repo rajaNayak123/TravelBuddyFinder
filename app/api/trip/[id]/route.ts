@@ -2,11 +2,13 @@ import { connectToDatabase } from "@/lib/db";
 import {type NextRequest, NextResponse } from "next/server";
 import { Trip } from "@/lib/models/Trip";
 
-export async function GET(req:NextRequest, { params }: { params: { id: string } }){
+export async function GET(req:NextRequest, { params }:{ params: Promise<{ id: string }> }){
     try {
         await connectToDatabase();
 
-        const trip = await Trip.findById(params.id).populate("userId", "name email");
+        const { id } = await params;
+        
+        const trip = await Trip.findById(id).populate("userId", "name email");
 
         if(!trip){
             return NextResponse.json({ message: "Trip not found" }, { status: 404 });

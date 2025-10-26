@@ -1,10 +1,9 @@
 import { auth } from "@/lib/auth";
 import { connectToDatabase } from "@/lib/db";
 import {Trip} from "@/lib/models/Trip";
-import {authOptions} from "@/lib/auth";
 import { type NextRequest, NextResponse } from "next/server";
 
-export async function GET(requ: NextRequest){
+export async function GET(){
     try {
         await connectToDatabase();
 
