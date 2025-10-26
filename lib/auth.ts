@@ -1,11 +1,12 @@
-import type { NextAuthOptions } from "next-auth"
+import NextAuth from "next-auth"
+import type { NextAuthConfig } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google"
 import bcrypt from "bcryptjs"
 import {connectToDatabase} from "./db"
 import {User} from "@/lib/models/User"
 
-export const authOptions: NextAuthOptions = {
+export const authConfig: NextAuthConfig = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -25,7 +26,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error("User not found")
         }
 
-        const isPasswordValid = await bcrypt.compare(credentials.password, user.password)
+        const isPasswordValid = await bcrypt.compare(credentials.password as string, user.password)
 
         if (!isPasswordValid) {
           throw new Error("Invalid password")
@@ -85,3 +86,7 @@ export const authOptions: NextAuthOptions = {
     strategy: "jwt",
   },
 }
+
+export const { handlers, auth, signIn, signOut } = NextAuth(authConfig)
+
+export const authOptions = authConfig
