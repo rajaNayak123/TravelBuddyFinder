@@ -4,7 +4,7 @@ import { Review } from "@/lib/models/Review";
 import { User } from "@/lib/models/User";
 import { auth } from "@/lib/auth";
 import { Types } from "mongoose";
-// import { createNotification } from "@/components/notification-helper"
+import { createNotification } from "@/components/notification-helper"
 import { type NextRequest, NextResponse } from "next/server";
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -52,14 +52,14 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
     const reviewer = await User.findById(session.user.id);
 
-    // await createNotification(
-    //   revieweeId,
-    //   "review",
-    //   `${reviewer?.name || "Someone"} left you a review`,
-    //   `They gave you a ${rating}-star rating on your ${trip.destination} trip`,
-    //   session.user.id,
-    //   id,
-    // )
+    await createNotification(
+      revieweeId,
+      "review",
+      `${reviewer?.name || "Someone"} left you a review`,
+      `They gave you a ${rating}-star rating on your ${trip.destination} trip`,
+      session.user.id,
+      id,
+    )
 
     return NextResponse.json(review, { status: 201 });
   } catch (error) {

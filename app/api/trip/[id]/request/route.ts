@@ -3,8 +3,8 @@ import { Trip } from "@/lib/models/Trip";
 import {auth} from "@/lib/auth";
 import {User} from "@/lib/models/User";
 import {Types} from "mongoose";
-// import { createNotification } from "@/components/notification-helper"
-import {type NextRequest, NextResponse } from "next/server";
+import { createNotification } from "@/components/notification-helper"
+import { NextResponse } from "next/server";
 
 export async function POST( { params }: { params: Promise<{ id: string }> } ){
     try {
@@ -38,14 +38,14 @@ export async function POST( { params }: { params: Promise<{ id: string }> } ){
 
         const requester = await User.findById(userObjectId);
 
-        // await createNotification(
-        //   trip.userId,
-        //   "trip_request",
-        //   `${requester?.name || "Someone"} wants to join your trip`,
-        //   `They're interested in your ${trip.destination} trip starting ${new Date(trip.startDate).toLocaleDateString()}`,
-        //   userObjectId, // Use ObjectId
-        //   id
-        // )
+        await createNotification(
+          trip.userId.toString(),
+          "trip_request",
+          `${requester?.name || "Someone"} wants to join your trip`,
+          `They're interested in your ${trip.destination} trip starting ${new Date(trip.startDate).toLocaleDateString()}`,
+          userObjectId.toString(), // Use ObjectId
+          id
+        )
 
     return NextResponse.json({ message: "Request sent successfully", trip })
 

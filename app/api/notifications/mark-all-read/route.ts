@@ -1,9 +1,9 @@
 import {auth} from "@/lib/auth"
 import { connectToDatabase } from "@/lib/db"
 import {Notification} from "@/lib/models/Notification"
-import { type NextRequest, NextResponse } from "next/server"
+import { NextResponse } from "next/server"
 
-export async function PUT(request: NextRequest) {
+export async function PUT() {
   try {
     const session = await auth()
 

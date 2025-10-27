@@ -65,9 +65,9 @@ export async function POST(request: NextRequest) {
         matchScore: matchScore || 0,
         })
 
-        // Create notifications for both users
-        const currentUser = await User.findById(session.user.id)
-        const matchedUser = await User.findById(matchedUserId)
+        // // Create notifications for both users
+        // const currentUser = await User.findById(session.user.id)
+        // const matchedUser = await User.findById(matchedUserId)
 
         // Notify the matched user
         await createMatchNotification(session.user.id, matchedUserId, matchScore || 0)
