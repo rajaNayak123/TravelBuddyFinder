@@ -4,9 +4,12 @@ import {auth} from "@/lib/auth";
 import {User} from "@/lib/models/User";
 import {Types} from "mongoose";
 import { createNotification } from "@/components/notification-helper"
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 
-export async function POST( { params }: { params: Promise<{ id: string }> } ){
+export async function POST(
+    request: NextRequest,
+    { params }: { params: Promise<{ id: string }> }
+){
     try {
         const session = await auth();
 
@@ -43,14 +46,14 @@ export async function POST( { params }: { params: Promise<{ id: string }> } ){
           "trip_request",
           `${requester?.name || "Someone"} wants to join your trip`,
           `They're interested in your ${trip.destination} trip starting ${new Date(trip.startDate).toLocaleDateString()}`,
-          userObjectId.toString(), // Use ObjectId
+          userObjectId.toString(),
           id
         )
 
-    return NextResponse.json({ message: "Request sent successfully", trip })
+        return NextResponse.json({ message: "Request sent successfully", trip })
 
     } catch (error) {
-    console.error("Request error:", error)
-    return NextResponse.json({ error: "Internal server error" }, { status: 500 })
+        console.error("Request error:", error)
+        return NextResponse.json({ error: "Internal server error" }, { status: 500 })
     }
 }

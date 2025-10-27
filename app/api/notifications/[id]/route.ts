@@ -1,9 +1,12 @@
 import {auth} from "@/lib/auth"
 import { connectToDatabase } from "@/lib/db"
 import {Notification} from "@/lib/models/Notification"
-import { NextResponse } from "next/server"
+import { NextRequest, NextResponse } from "next/server"
 
-export async function PUT( { params }: { params: { id: string } }) {
+export async function PUT(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
   try {
     const session = await auth()
 
@@ -11,9 +14,15 @@ export async function PUT( { params }: { params: { id: string } }) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    const { id } = await params
+    
     await connectToDatabase()
 
-    const notification = await Notification.findByIdAndUpdate(params.id, { read: true }, { new: true })
+    const notification = await Notification.findByIdAndUpdate(
+      id, 
+      { read: true }, 
+      { new: true }
+    )
 
     return NextResponse.json(notification)
   } catch (error) {

@@ -3,7 +3,10 @@ import { connectToDatabase } from "@/lib/db"
 import {Message} from "@/lib/models/Message"
 import {type NextRequest, NextResponse } from "next/server"
 
-export async function GET(req: NextRequest, {params}: {params: {userId: string}}){
+export async function GET(
+    req: NextRequest, 
+    { params }: { params: Promise<{ userId: string }> }
+){
     try {
         const session = await auth();
 
@@ -13,17 +16,18 @@ export async function GET(req: NextRequest, {params}: {params: {userId: string}}
 
         await connectToDatabase();
 
+        const { userId } = await params;
+
         const messages = await Message.find({
             $or:[
-                { senderId: session.user.id, recipientId: params.userId },
-                { senderId: params.userId, recipientId: session.user.id },
+                { senderId: session.user.id, recipientId: userId },
+                { senderId: userId, recipientId: session.user.id },
             ]
         }).sort({ createdAt: 1 });
 
-            // Mark messages as read
         await Message.updateMany(
             {
-                senderId: params.userId,
+                senderId: userId,
                 recipientId: session.user.id,
                 read: false,
             },
