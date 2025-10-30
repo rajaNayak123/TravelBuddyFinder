@@ -1,4 +1,4 @@
-import {auth} from "@/lib/auth"
+import {auth, signOut} from "@/lib/auth"
 import { redirect } from "next/navigation"
 import { connectToDatabase } from "@/lib/db"
 import {User} from "@/lib/models/User"
@@ -21,6 +21,13 @@ export default async function Dashboard() {
         userId: session.user.id,
         read: false
     })
+
+    const handleSignOut = async () => {
+        "use server"
+        await signOut({
+            redirectTo: "/auth/signin"
+        });
+    }
 
     return (
         <div className="min-h-screen bg-background">
@@ -51,6 +58,11 @@ export default async function Dashboard() {
                   )}
                 </Button>
               </Link>
+              <form action={handleSignOut}>
+                <Button type="submit" variant="ghost" className="text-destructive hover:bg-destructive/10">
+                  Sign Out
+                </Button>
+              </form>
             </nav>
           </div>
         </header>

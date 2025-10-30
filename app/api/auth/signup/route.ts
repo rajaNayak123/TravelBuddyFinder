@@ -2,6 +2,7 @@ import {connectToDatabase} from "@/lib/db";
 import {User} from "@/lib/models/User";
 import bcrypt from "bcryptjs";
 import { type NextRequest, NextResponse } from "next/server"
+import { signIn } from "@/lib/auth"
 
 export async function POST(req: NextRequest){
     try {
@@ -29,15 +30,23 @@ export async function POST(req: NextRequest){
 
         await newUser.save();
 
+        const userCreated = {
+            id: newUser._id.toString(),
+            email: newUser.email,
+            name: newUser.name,
+        }
+
+        await signIn("credentials", {
+            email,
+            password,
+            redirect: false,
+        });
+
         return NextResponse.json(
             {
               message: "User created successfully",
               user: {
-                user: {
-                    id: newUser._id,
-                    email: newUser.email,
-                    name: newUser.name,
-                },
+                user: userCreated
               },
             },
             { status: 201 },
