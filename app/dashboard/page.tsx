@@ -23,6 +23,9 @@ export default async function Dashboard() {
         read: false
     })
 
+        // calculate random number once before render
+        const matchingBuddiesCount = 12;
+
     const handleSignOut = async () => {
         "use server"
         await signOut({
@@ -176,7 +179,7 @@ export default async function Dashboard() {
                                         <Globe className="w-10 h-10 text-emerald-200" />
                                     </div>
                                     <p className="text-emerald-100 mb-6 text-lg">
-                                        We found <span className="font-bold">{Math.floor(Math.random() * 15) + 5} matching travel buddies</span> for your upcoming trips!
+                                        We found <span className="font-bold">{matchingBuddiesCount} matching travel buddies</span> for your upcoming trips!
                                     </p>
                                     <div className="flex gap-4 flex-wrap">
                                         <Link href="/matches">

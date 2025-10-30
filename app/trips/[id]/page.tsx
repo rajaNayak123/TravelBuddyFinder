@@ -34,13 +34,37 @@ export default function TripDetailPage() {
   const [requesting, setRequesting] = useState(false)
   const [hasRequested, setHasRequested] = useState(false)
 
+  // useEffect(() => {
+  //   if (status === "unauthenticated") {
+  //     router.push("/auth/signin")
+  //   } else if (status === "authenticated") {
+  //     fetchTrip()
+  //   }
+  // }, [status, router])
+
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin")
-    } else if (status === "authenticated") {
+      return
+    }
+    
+    if (status === "authenticated") {
+      const fetchTrip = async () => {
+        try {
+          const response = await fetch(`/api/trips/${tripId}`)
+          const data = await response.json()
+          setTrip(data)
+          setHasRequested(data.companions.includes(session?.user?.id))
+        } catch (error) {
+          console.error("Failed to fetch trip:", error)
+        } finally {
+          setLoading(false)
+        }
+      }
+
       fetchTrip()
     }
-  }, [status, router])
+  }, [status, router, tripId, session?.user?.id])
 
   const fetchTrip = async () => {
     try {

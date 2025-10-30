@@ -49,9 +49,9 @@ export default function SearchPage() {
     }
   }, [status, router])
 
-  useEffect(() => {
-    applyFilters()
-  }, [filters, users])
+  // useEffect(() => {
+  //   applyFilters()
+  // }, [filters, users])
 
   const fetchUsers = async () => {
     try {
@@ -65,37 +65,41 @@ export default function SearchPage() {
     }
   }
 
-  const applyFilters = () => {
-    let filtered = users
+  useEffect(() => {
+    const applyFilters = () => {
+      let filtered = users
 
-    if (filters.name) {
-      filtered = filtered.filter((u) => u.name.toLowerCase().includes(filters.name.toLowerCase()))
+      if (filters.name) {
+        filtered = filtered.filter((u) => u.name.toLowerCase().includes(filters.name.toLowerCase()))
+      }
+
+      if (filters.destination) {
+        filtered = filtered.filter((u) =>
+          u.destinations.some((d) => d.toLowerCase().includes(filters.destination.toLowerCase())),
+        )
+      }
+
+      if (filters.travelStyle.length > 0) {
+        filtered = filtered.filter((u) => filters.travelStyle.some((s) => u.travelStyle.includes(s)))
+      }
+
+      if (filters.budget) {
+        filtered = filtered.filter((u) => u.budget === filters.budget)
+      }
+
+      if (filters.minAge) {
+        filtered = filtered.filter((u) => u.age && u.age >= Number.parseInt(filters.minAge))
+      }
+
+      if (filters.maxAge) {
+        filtered = filtered.filter((u) => u.age && u.age <= Number.parseInt(filters.maxAge))
+      }
+
+      setFilteredUsers(filtered)
     }
 
-    if (filters.destination) {
-      filtered = filtered.filter((u) =>
-        u.destinations.some((d) => d.toLowerCase().includes(filters.destination.toLowerCase())),
-      )
-    }
-
-    if (filters.travelStyle.length > 0) {
-      filtered = filtered.filter((u) => filters.travelStyle.some((s) => u.travelStyle.includes(s)))
-    }
-
-    if (filters.budget) {
-      filtered = filtered.filter((u) => u.budget === filters.budget)
-    }
-
-    if (filters.minAge) {
-      filtered = filtered.filter((u) => u.age && u.age >= Number.parseInt(filters.minAge))
-    }
-
-    if (filters.maxAge) {
-      filtered = filtered.filter((u) => u.age && u.age <= Number.parseInt(filters.maxAge))
-    }
-
-    setFilteredUsers(filtered)
-  }
+    applyFilters()
+  }, [filters, users])
 
   const toggleTravelStyle = (style: string) => {
     setFilters((prev) => ({
