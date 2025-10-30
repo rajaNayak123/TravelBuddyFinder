@@ -1,13 +1,17 @@
 import NextAuth from "next-auth"
-import type { NextAuthConfig } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google"
 import bcrypt from "bcryptjs"
-import {connectToDatabase} from "./db"
-import {User} from "@/lib/models/User"
+import { connectToDatabase } from "./db"
+import { User } from "@/lib/models/User"
+import { authConfig } from "./auth.config"
 
-export const authConfig: NextAuthConfig = {
+export const { handlers, auth, signIn, signOut } = NextAuth({
+  ...authConfig,
   secret: process.env.AUTH_SECRET,
+  session: {
+    strategy: "jwt",
+  },
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -17,32 +21,41 @@ export const authConfig: NextAuthConfig = {
       },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password) {
-          throw new Error("Invalid credentials")
+          return null
         }
 
-        await connectToDatabase()
-        const user = await User.findOne({ email: credentials.email })
+        try {
+          await connectToDatabase()
 
-        if (!user || !user.password) {
-          throw new Error("User not found")
-        }
+          const user = await User.findOne({ email: credentials.email })
 
-        const isPasswordValid = await bcrypt.compare(credentials.password as string, user.password)
+          if (!user || !user.password) {
+            return null
+          }
 
-        if (!isPasswordValid) {
-          throw new Error("Invalid password")
-        }
+          const isPasswordValid = await bcrypt.compare(
+            credentials.password as string,
+            user.password
+          )
 
-        return {
-          id: user._id.toString(),
-          email: user.email,
-          name: user.name,
+          if (!isPasswordValid) {
+            return null
+          }
+
+          return {
+            id: user._id.toString(),
+            email: user.email,
+            name: user.name,
+          }
+        } catch (error) {
+          console.error("Auth error:", error)
+          return null
         }
       },
     }),
     GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID || "",
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || "",
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     }),
   ],
   callbacks: {
@@ -59,6 +72,7 @@ export const authConfig: NextAuthConfig = {
               googleId: account.providerAccountId,
             })
           }
+
           user.id = dbUser._id.toString()
         } catch (error) {
           console.error("Error in Google sign in:", error)
@@ -80,14 +94,4 @@ export const authConfig: NextAuthConfig = {
       return session
     },
   },
-  pages: {
-    signIn: "/auth/signin",
-  },
-  session: {
-    strategy: "jwt",
-  },
-}
-
-export const { handlers, auth, signIn, signOut } = NextAuth(authConfig)
-
-export const authOptions = authConfig 
+})

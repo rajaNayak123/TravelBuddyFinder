@@ -1,19 +1,26 @@
-import { auth } from "@/lib/auth"
 import { NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
+import { getToken } from "next-auth/jwt"
 
-export default auth((req) => {
-  const token = req.auth
-  const pathname = req.nextUrl.pathname
+export async function middleware(request: NextRequest) {
+  const pathname = request.nextUrl.pathname
 
-  // Redirect authenticated users away from auth pages
-  if (token && (pathname.startsWith("/auth/signin") || pathname.startsWith("/auth/signup"))) {
-    return NextResponse.redirect(new URL("/dashboard", req.url))
-  }
-
-  // Allow access to public routes
-  if (!token && (pathname.startsWith("/auth/") || pathname === "/")) {
+  // Skip middleware for API routes, static files, etc.
+  if (
+    pathname.startsWith("/api/auth") ||
+    pathname.startsWith("/_next") ||
+    pathname.startsWith("/favicon.ico")
+  ) {
     return NextResponse.next()
   }
+
+  // Get the token without importing User model
+  const token = await getToken({ 
+    req: request,
+    secret: process.env.AUTH_SECRET,
+  })
+
+  const isLoggedIn = !!token
 
   // Protected routes
   const protectedRoutes = [
@@ -26,17 +33,27 @@ export default auth((req) => {
     "/search",
   ]
 
-  const isProtectedRoute = protectedRoutes.some((route) => pathname.startsWith(route))
+  const isProtectedRoute = protectedRoutes.some((route) => 
+    pathname.startsWith(route)
+  )
 
-  if (isProtectedRoute && !token) {
-    return NextResponse.redirect(new URL("/auth/signin", req.url))
+  // Redirect to login if accessing protected route without auth
+  if (isProtectedRoute && !isLoggedIn) {
+    const signInUrl = new URL("/auth/signin", request.url)
+    signInUrl.searchParams.set("callbackUrl", pathname)
+    return NextResponse.redirect(signInUrl)
+  }
+
+  // Redirect authenticated users away from auth pages
+  if (isLoggedIn && (pathname.startsWith("/auth/signin") || pathname.startsWith("/auth/signup"))) {
+    return NextResponse.redirect(new URL("/dashboard", request.url))
   }
 
   return NextResponse.next()
-})
+}
 
 export const config = {
   matcher: [
-    "/((?!api|_next/static|_next/image|favicon.ico|public).*)",
+    "/((?!api/auth|_next/static|_next/image|favicon.ico).*)",
   ],
 }
