@@ -7,6 +7,7 @@ import {connectToDatabase} from "./db"
 import {User} from "@/lib/models/User"
 
 export const authConfig: NextAuthConfig = {
+  secret: process.env.AUTH_SECRET,
   providers: [
     CredentialsProvider({
       name: "Credentials",
