@@ -1,4 +1,16 @@
-import mongoose from "mongoose";
+import mongoose, {Document} from "mongoose";
+
+interface INotification extends Document {
+    userId: mongoose.Types.ObjectId;
+    type: "match" | "message" | "trip_request" | "trip_approved" | "review";
+    title: string;
+    description: string;
+    relatedUserId?: mongoose.Types.ObjectId;
+    relatedTripId?: mongoose.Types.ObjectId;
+    read: boolean;
+    createdAt: Date;
+    updatedAt: Date;
+  }
 
 const NotificationSchema = new mongoose.Schema({
     userId: {
@@ -35,6 +47,5 @@ const NotificationSchema = new mongoose.Schema({
     },
 },{timestamps: true});
 
-const Notification = mongoose.model("Notification", NotificationSchema) || mongoose.models.Notification;
-
+const Notification = (mongoose.models.Notification || mongoose.model<INotification>("Notification", NotificationSchema)) as mongoose.Model<INotification>;
 export {Notification};
