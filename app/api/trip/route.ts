@@ -34,8 +34,14 @@ export async function POST(req: NextRequest){
             destination: body.destination,
             startDate: body.startDate,
             endDate: body.endDate,
-            details: body.details
-        });
+            activities: body.activities || [],        
+            budget: body.budget,
+            maxCompanions: body.maxCompanions || 2,
+            description: body.description || "",
+            companions: []
+          });
+
+         await trip.save();
 
         return NextResponse.json({ trip }, { status: 201 })
     } catch (error) {
