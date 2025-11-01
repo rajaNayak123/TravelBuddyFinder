@@ -15,7 +15,11 @@ interface Trip {
   activities: string[]
   budget: string
   maxCompanions: number
-  companions: string[]
+  companions: Array<{
+    _id: string
+    name?: string
+    email?: string
+  }> | string[]
   description: string
   userId: {
     name: string
@@ -34,14 +38,6 @@ export default function TripDetailPage() {
   const [requesting, setRequesting] = useState(false)
   const [hasRequested, setHasRequested] = useState(false)
 
-  // useEffect(() => {
-  //   if (status === "unauthenticated") {
-  //     router.push("/auth/signin")
-  //   } else if (status === "authenticated") {
-  //     fetchTrip()
-  //   }
-  // }, [status, router])
-
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/auth/signin")
@@ -49,29 +45,31 @@ export default function TripDetailPage() {
     }
     
     if (status === "authenticated") {
-      const fetchTrip = async () => {
-        try {
-          const response = await fetch(`/api/trip/${tripId}`)
-          const data = await response.json()
-          setTrip(data)
-          setHasRequested(data.companions.includes(session?.user?.id))
-        } catch (error) {
-          console.error("Failed to fetch trip:", error)
-        } finally {
-          setLoading(false)
-        }
-      }
-
-      fetchTrip()
+      fetchTripData()
     }
   }, [status, router, tripId, session?.user?.id])
 
-  const fetchTrip = async () => {
+  const fetchTripData = async () => {
     try {
-      const response = await fetch(`/api/trips/${tripId}`)
+      const response = await fetch(`/api/trip/${tripId}`)
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+      
       const data = await response.json()
-      setTrip(data)
-      setHasRequested(data.companions.includes(session?.user?.id))
+      console.log("Fetched data:", data)
+      
+      const tripData = data.trip || data
+      setTrip(tripData)
+      
+      if (tripData.companions && session?.user?.id) {
+        const hasRequest = tripData.companions.some((companion: any) => {
+          const companionId = typeof companion === 'string' ? companion : companion._id
+          return companionId === session.user.id
+        })
+        setHasRequested(hasRequest)
+      }
     } catch (error) {
       console.error("Failed to fetch trip:", error)
     } finally {
@@ -82,13 +80,16 @@ export default function TripDetailPage() {
   const handleRequestToJoin = async () => {
     setRequesting(true)
     try {
-      const response = await fetch(`/api/trips/${tripId}/request`, {
+      const response = await fetch(`/api/trip/${tripId}/request`, {
         method: "POST",
       })
-
+      
       if (response.ok) {
         setHasRequested(true)
-        fetchTrip()
+        await fetchTripData() 
+      } else {
+        const errorData = await response.json()
+        console.error("Request failed:", errorData)
       }
     } catch (error) {
       console.error("Failed to request:", error)
@@ -98,7 +99,11 @@ export default function TripDetailPage() {
   }
 
   if (loading) {
-    return <div className="min-h-screen flex items-center justify-center">Loading trip...</div>
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-lg">Loading trip...</p>
+      </div>
+    )
   }
 
   if (!trip) {
@@ -136,8 +141,18 @@ export default function TripDetailPage() {
                 </CardDescription>
               </div>
               {!isOwner && (
-                <Button onClick={handleRequestToJoin} disabled={hasRequested || isFull || requesting} size="lg">
-                  {hasRequested ? "Request Sent" : isFull ? "Trip Full" : "Request to Join"}
+                <Button 
+                  onClick={handleRequestToJoin} 
+                  disabled={hasRequested || isFull || requesting} 
+                  size="lg"
+                >
+                  {requesting 
+                    ? "Requesting..." 
+                    : hasRequested 
+                    ? "Request Sent" 
+                    : isFull 
+                    ? "Trip Full" 
+                    : "Request to Join"}
                 </Button>
               )}
             </div>
@@ -167,10 +182,13 @@ export default function TripDetailPage() {
 
               <div>
                 <h3 className="font-semibold mb-4">Activities</h3>
-                {trip.activities.length > 0 ? (
+                {trip.activities && trip.activities.length > 0 ? (
                   <div className="flex flex-wrap gap-2">
-                    {trip.activities.map((activity) => (
-                      <span key={activity} className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm">
+                    {trip.activities.map((activity, index) => (
+                      <span 
+                        key={`${activity}-${index}`} 
+                        className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm"
+                      >
                         {activity}
                       </span>
                     ))}
@@ -191,14 +209,38 @@ export default function TripDetailPage() {
 
             {/* Companions */}
             <div>
-              <h3 className="font-semibold mb-4">Companions ({trip.companions.length})</h3>
-              {trip.companions.length > 0 ? (
+              <h3 className="font-semibold mb-4">
+                Companions ({trip.companions?.length || 0})
+              </h3>
+              {trip.companions && trip.companions.length > 0 ? (
                 <div className="space-y-2">
-                  {trip.companions.map((companion) => (
-                    <div key={companion} className="bg-card border border-border p-3 rounded">
-                      <p className="font-medium">Companion ID: {companion}</p>
-                    </div>
-                  ))}
+                  {trip.companions.map((companion: any, index: number) => {
+                    // Handle both populated objects and string IDs
+                    const isPopulated = typeof companion === 'object' && companion !== null
+                    const companionId = isPopulated ? companion._id : companion
+                    const companionName = isPopulated ? companion.name : null
+                    const companionEmail = isPopulated ? companion.email : null
+                    
+                    return (
+                      <div 
+                        key={companionId || index} 
+                        className="bg-card border border-border p-3 rounded"
+                      >
+                        {companionName ? (
+                          <div>
+                            <p className="font-medium">{companionName}</p>
+                            {companionEmail && (
+                              <p className="text-sm text-muted-foreground">{companionEmail}</p>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="font-medium text-muted-foreground">
+                            Companion (ID: {companionId.slice(0, 8)}...)
+                          </p>
+                        )}
+                      </div>
+                    )
+                  })}
                 </div>
               ) : (
                 <p className="text-muted-foreground">No companions yet. Be the first to join!</p>

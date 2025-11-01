@@ -1,4 +1,17 @@
-import mongoose from "mongoose";
+import mongoose, {Document} from "mongoose";
+
+export interface ITrip extends Document {
+  userId: mongoose.Types.ObjectId | any; 
+  destination: string;
+  startDate: Date;
+  endDate: Date;
+  activities: string[];
+  budget: string;
+  maxCompanions: number;
+  companions: mongoose.Types.ObjectId[];
+  description: string;
+  createdAt: Date;
+}
 
 const TripSchema = new mongoose.Schema({
     userId: {
@@ -47,6 +60,6 @@ const TripSchema = new mongoose.Schema({
     },
 },{timestamps: true});
 
-const Trip = mongoose.model("Trip", TripSchema) || mongoose.models.Trip;
+const Trip = mongoose.models.Trip || mongoose.model<ITrip>("Trip", TripSchema);
 
 export {Trip};
