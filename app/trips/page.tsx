@@ -41,7 +41,7 @@ export default function TripsPage() {
 
   const fetchTrips = async () => {
     try {
-      const response = await fetch("/api/trips")
+      const response = await fetch("/api/trip")
       const data = await response.json()
       setTrips(data)
     } catch (error) {

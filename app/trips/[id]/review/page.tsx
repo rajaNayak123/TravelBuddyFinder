@@ -20,7 +20,7 @@ export default function ReviewPage() {
     setLoading(true)
 
     try {
-      const response = await fetch(`/api/trips/${tripId}/review`, {
+      const response = await fetch(`/api/trip/${tripId}/review`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ rating, comment }),

@@ -33,7 +33,7 @@ export default function CreateTripPage() {
     setLoading(true)
 
     try {
-      const response = await fetch("/api/trips", {
+      const response = await fetch("/api/trip", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
