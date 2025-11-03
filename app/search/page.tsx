@@ -57,7 +57,7 @@ export default function SearchPage() {
     try {
       const response = await fetch("/api/users")
       const data = await response.json()
-      setUsers(data)
+      setUsers(data.users)
     } catch (error) {
       console.error("Failed to fetch users:", error)
     } finally {
