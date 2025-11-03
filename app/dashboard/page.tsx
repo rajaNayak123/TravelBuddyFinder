@@ -17,9 +17,9 @@ export default async function Dashboard() {
 
     await connectToDatabase()
 
-    const user = await User.findById(session.user.id)
+    const user = await User.findOne({ email: session.user.email })
     const unreadNotifications = await Notification.countDocuments({
-        userId: session.user.id,
+        userId: user?._id,
         read: false
     })
 
