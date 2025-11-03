@@ -357,7 +357,7 @@ export default function TripsPage() {
                               Created by
                             </p>
                             <p className="text-sm font-semibold text-gray-200">
-                              {trip.userId.name}
+                              {trip.userId?.name || "Unknown User"}
                             </p>
                           </div>
 

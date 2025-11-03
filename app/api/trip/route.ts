@@ -11,6 +11,7 @@ export async function GET() {
       .populate("userId", "name email")
       .sort({ createdAt: -1 });
     
+    console.log("Fetched trips with populated userId:", JSON.stringify(trips, null, 2));
     return NextResponse.json(trips);
     
   } catch (error) {

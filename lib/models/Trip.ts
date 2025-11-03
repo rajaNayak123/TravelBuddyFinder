@@ -15,7 +15,7 @@ export interface ITrip extends Document {
 
 const TripSchema = new mongoose.Schema({
     userId: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
         ref: "User",
         required: true,
       },
@@ -45,7 +45,7 @@ const TripSchema = new mongoose.Schema({
         default: 1,
       },
     companions: {
-        type: [mongoose.Schema.Types.ObjectId],
+        type: [String],
         ref: "User",
         default: [],
       },
