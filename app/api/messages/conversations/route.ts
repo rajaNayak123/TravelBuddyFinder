@@ -3,6 +3,7 @@ import { connectToDatabase } from "@/lib/db"
 import {Message} from "@/lib/models/Message"
 import { User } from "@/lib/models/User"
 import { NextResponse } from "next/server"
+import mongoose from "mongoose";
 
 // Add this interface at the top
 interface IMessage {
@@ -22,19 +23,21 @@ export async function GET(){
         }
 
         await connectToDatabase();
+        // const userId = new mongoose.Types.ObjectId(session.user.id);
+        const userId = session.user.id;
 
         // Type assertion here
         const messages = await Message.find({
             $or:[
-                {senderId: session.user.id},
-                {receiverId: session.user.id}
+                {senderId: userId},
+                {receiverId: userId}
             ]
         }).sort({ createdAt: -1 }).lean() as IMessage[];  // Added .lean() and type assertion
 
         const userIds = new Set<string>()
 
         messages.forEach((msg) => {
-            if (msg.senderId.toString() !== session.user.id) {
+            if (msg.senderId.toString() !== userId.toString()) {
               userIds.add(msg.senderId.toString())
             } else {
               userIds.add(msg.receiverId.toString())
@@ -42,22 +45,22 @@ export async function GET(){
         })
 
         const conversations = await Promise.all(
-            Array.from(userIds).map(async (userId) => {
-              const user = await User.findById(userId)
+            Array.from(userIds).map(async (contactId) => {
+              const user = await User.findById(contactId)
               const lastMessage = messages.find(
                 (msg) =>
-                  (msg.senderId.toString() === userId && msg.receiverId.toString() === session.user.id) ||
-                  (msg.senderId.toString() === session.user.id && msg.receiverId.toString() === userId),
+                  (msg.senderId.toString() === contactId && msg.receiverId.toString() === userId.toString()) ||
+                  (msg.senderId.toString() === userId.toString() && msg.receiverId.toString() === contactId),
               )
       
               const unreadCount = await Message.countDocuments({
-                senderId: userId,
-                receiverId: session.user.id,
+                senderId: contactId,
+                receiverId: userId,
                 read: false,
               })
       
               return {
-                userId,
+                userId: contactId,
                 userName: user?.name || "Unknown",
                 lastMessage: lastMessage?.content,
                 lastMessageTime: lastMessage?.createdAt,
