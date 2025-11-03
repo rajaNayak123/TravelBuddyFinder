@@ -2,12 +2,12 @@ import mongoose from "mongoose";
 
 const MatchSchema = new mongoose.Schema({
     userId1:{
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
         ref: "User",
         required: true,
     },
     userId2:{
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
         ref: "User",
         required: true,
     },
@@ -33,6 +33,6 @@ const MatchSchema = new mongoose.Schema({
     },
 },{timestamps: true});
 
-const Match = mongoose.model("Match", MatchSchema) || mongoose.models.Match;
+const Match = mongoose.models.Match || mongoose.model("Match", MatchSchema);
 
 export {Match};

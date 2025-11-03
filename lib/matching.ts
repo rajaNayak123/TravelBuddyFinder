@@ -51,8 +51,8 @@ export async function calculateMatchScore(userId: string, otherUserId: string): 
 }
 
 export async function findMatches(userId:string, limit=10): Promise<MatchScore[]>{
-    const user = await User.findById(userId);
-
+    const user = await User.findOne({ _id: userId });
+    
     if(!user || user.destinations?.length === 0){
         return []
     }

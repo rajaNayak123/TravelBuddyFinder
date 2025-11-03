@@ -22,7 +22,7 @@ export async function GET(){
     // Fetch full user data for matched users
         const matchedUsers = await Promise.all(
             matches.map(async (match) => {
-            const user = await User.findById(match.userId)
+            const user = await User.findOne({ _id: match.userId })
             return {
                 _id: match.userId,
                 userId: user,
