@@ -4,7 +4,7 @@ import GoogleProvider from "next-auth/providers/google"
 import bcrypt from "bcryptjs"
 import { connectToDatabase } from "./db"
 import { User } from "@/lib/models/User"
-
+import {v4 as uuidv4} from 'uuid';
 export const authConfig = {
   providers: [
     CredentialsProvider({
@@ -105,8 +105,6 @@ export const authConfig = {
           })
           
           if (!existingUser) {
-            // Create new user for Google sign in
-            const { v4: uuidv4 } = require('uuid');
             existingUser = await User.create({
               _id: uuidv4(),
               email: user.email,
