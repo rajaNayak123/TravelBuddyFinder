@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, useCallback } from "react"
 import { useSession } from "next-auth/react"
 import { useRouter, useParams } from "next/navigation"
 import Link from "next/link"
@@ -16,8 +16,6 @@ import {
   Share2,
   Heart,
   CheckCircle2,
-  ChevronLeft,
-  ChevronRight
 } from "lucide-react"
 
 
@@ -76,18 +74,7 @@ export default function TripDetailPage() {
   const [requesting, setRequesting] = useState(false)
   const [hasRequested, setHasRequested] = useState(false)
 
-  useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/auth/signin")
-      return
-    }
-    
-    if (status === "authenticated") {
-      fetchTripData()
-    }
-  }, [status, router, tripId, session?.user?.id])
-
-  const fetchTripData = async () => {
+  const fetchTripData = useCallback(async () => {
     try {
       const response = await fetch(`/api/trip/${tripId}`)
       
@@ -111,7 +98,18 @@ export default function TripDetailPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [tripId, session?.user?.id])
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/auth/signin")
+      return
+    }
+    
+    if (status === "authenticated") {
+      fetchTripData()
+    }
+  }, [status, router, fetchTripData])
 
   const handleRequestToJoin = async () => {
     setRequesting(true)
