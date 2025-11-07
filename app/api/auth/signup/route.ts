@@ -3,6 +3,7 @@ import {User} from "@/lib/models/User";
 import bcrypt from "bcryptjs";
 import { type NextRequest, NextResponse } from "next/server"
 import { signIn } from "@/lib/auth"
+import { v4 as uuidv4 } from 'uuid';
 
 export async function POST(req: NextRequest){
     try {
@@ -23,6 +24,7 @@ export async function POST(req: NextRequest){
         const hashedPassword = await bcrypt.hash(password, 10);
 
         const newUser = new User({
+            _id: uuidv4(),
             email,
             name,
             password: hashedPassword
