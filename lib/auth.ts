@@ -8,6 +8,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   },
   ...authConfig,
   callbacks: {
+    ...authConfig.callbacks, // Preserve the authorized callback
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id
