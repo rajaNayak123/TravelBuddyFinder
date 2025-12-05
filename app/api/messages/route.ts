@@ -24,7 +24,7 @@ export async function POST(req: NextRequest){
 
         const message = await Message.create({
             senderId: session.user.id,
-            recipientId,
+            receiverId: recipientId,
             content
         });
 
